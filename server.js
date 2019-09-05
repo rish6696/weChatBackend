@@ -1,4 +1,3 @@
-
 import express from 'express'
 import dotenv from 'dotenv'
 import route from './routes/index'
@@ -17,4 +16,4 @@ mongoose.connect(config.DB_URL)
 
 app.use('/v1',route)
 
-app.listen(8555,x=>console.log(`server started`))
+app.listen(5896,x=>console.log(`server started`))
