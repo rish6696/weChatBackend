@@ -15,5 +15,6 @@ mongoose.connect(config.DB_URL)
 
 
 app.use('/v1',route)
+app.use('/',(req,res)=>res.send('hello'))
 
 app.listen(5896,x=>console.log(`server started`))
