@@ -35,7 +35,7 @@ async function verifyFacebookToken(token) {
 }
 
 async function loginSocial(req,res,next){
-    console.log(req.body.str,"***************************");
+    console.log(req.body,"***************************");
     const { token,source }=req.body
     const validationPromise=source==='google'?verifyGoogleToken(token):verifyFacebookToken(token)
     try { req.body=await validationPromise } catch (error) { return res.status(400).send({status:false,message:'Invalid token'})}
