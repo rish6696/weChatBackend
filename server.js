@@ -3,10 +3,25 @@ import dotenv from 'dotenv'
 import route from './routes/index'
 import mongoose from 'mongoose'
 import config from './config'
+import http from 'http';
+import socket from 'socket.io';
+
+
 
 const app=express();
-app.use(express.urlencoded({extended:true}))
-app.use(express.json())
+const server=http.Server(app);
+const io=socket(server);
+
+
+
+app.use(express.urlencoded({extended:true}));
+app.use(express.json());
+
+io.on('connection',socket=>{
+    console.log(socket.id);
+})
+
+
  
 
 mongoose.connect(config.DB_URL,)
@@ -17,7 +32,7 @@ mongoose.connect(config.DB_URL,)
 app.use('/v1',route)
 app.use('/',(req,res)=>res.send('hello'))
 
-app.listen(5896,x=>console.log(`server started`))
+server.listen(5896,x=>console.log(`server started`))
 
 //install babel-cli globally for pm2 
 //then run pm2 start npm -- run start

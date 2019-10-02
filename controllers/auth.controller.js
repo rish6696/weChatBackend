@@ -35,7 +35,7 @@ async function verifyFacebookToken(token) {
 }
 
 async function loginSocial(req,res,next){
-    console.log('trigered')
+    console.log(req.body.str,"***************************");
     const { token,source }=req.body
     const validationPromise=source==='google'?verifyGoogleToken(token):verifyFacebookToken(token)
     try { req.body=await validationPromise } catch (error) { return res.status(400).send({status:false,message:'Invalid token'})}
@@ -54,6 +54,7 @@ async function loginSocial(req,res,next){
     }
    
     const jwtToken=jwt.sign({userID},config.JWT_SECRET)
+    console.log(jwtToken)
     newUser ? res.send({status:true,jwtToken}):
     UserModel.updateOne({_id:userID},{$set:{lastLogin:new Date()}}).
     then(x=>res.send({ status:true, jwtToken }) ).
