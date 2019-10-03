@@ -38,7 +38,9 @@ async function loginSocial(req,res,next){
     console.log(req.body,"***************************");
     const { token,source }=req.body
     const validationPromise=source==='google'?verifyGoogleToken(token):verifyFacebookToken(token)
-    try { req.body=await validationPromise } catch (error) { return res.status(400).send({status:false,message:'Invalid token'})}
+    try { req.body=await validationPromise } catch (error) {
+        console.log(error);
+         return res.status(400).send({status:false,message:'Invalid token'})}
     const UserModel= models.userModel()
     const user=await UserModel.findOne({email:req.body.email}) 
     let userID=null
@@ -57,7 +59,7 @@ async function loginSocial(req,res,next){
     console.log(jwtToken)
     newUser ? res.send({status:true,jwtToken}):
     UserModel.updateOne({_id:userID},{$set:{lastLogin:new Date()}}).
-    then(x=>res.send({ status:true, jwtToken }) ).
+    then(x=>res.send({ status:true, jwtToken,userID }) ).
     catch(e=>res.send({status:false,error:e}))  
 }
 

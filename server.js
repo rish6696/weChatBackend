@@ -5,6 +5,7 @@ import mongoose from 'mongoose'
 import config from './config'
 import http from 'http';
 import socket from 'socket.io';
+import run from './socket';
 
 
 
@@ -17,8 +18,13 @@ const io=socket(server);
 app.use(express.urlencoded({extended:true}));
 app.use(express.json());
 
+
 io.on('connection',socket=>{
-    console.log(socket.id);
+    console.log('connected',socket.id);
+    socket.on('sending_chat',(data)=>{
+        console.log(data)
+        socket.broadcast.emit('recieve_chat',data)
+    })
 })
 
 
@@ -36,4 +42,10 @@ server.listen(5896,x=>console.log(`server started`))
 
 //install babel-cli globally for pm2 
 //then run pm2 start npm -- run start
+
+
+
+export default {
+    app
+}
 
