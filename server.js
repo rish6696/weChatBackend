@@ -23,7 +23,7 @@ io.on('connection',socket=>{
     console.log('connected',socket.id);
     socket.on('sending_chat',(data)=>{
         console.log(data)
-        socket.broadcast.emit('recieve_chat',data)
+        socket.broadcast.emit('chat_recieved',data)
     })
 })
 
