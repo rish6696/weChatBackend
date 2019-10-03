@@ -7,7 +7,7 @@ function getAllUsers(req,res,next){
     const {pgNo} =req.params;
     const userID=req.user;
     const userModel=Models.userModel();
-    userModel.find({_id:{$ne:userID}},{_id:1})
+    userModel.find({_id:{$ne:userID}},{_id:1,name:1})
     .skip((pgNo-1)*pageSize)
     .limit(pageSize)
     .then(x=>res.send({status:true,data:x}))
