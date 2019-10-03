@@ -1,6 +1,6 @@
 import Models from '../models/index'
 import { model } from 'mongoose'
-const pageSize=2;
+const pageSize=7;
 function getAllUsers(req,res,next){
 
     console.log('trigeered',req.body,req.params)
