@@ -6,6 +6,9 @@ import config from './config'
 import http from 'http';
 import socket from 'socket.io';
 
+import Models from './models/index';
+
+
 
 
 
@@ -18,12 +21,42 @@ const io=socket(server);
 app.use(express.urlencoded({extended:true}));
 app.use(express.json());
 
+let connectedUSerID={};
+
 
 io.on('connection',socket=>{
-    console.log('connected',socket.id);
+    console.log("socked coonected id="+socket.id);
+    socket.on('JOIN_CHAT',async (data)=>{
+       // console.log(data);
+    
+        const sender=data.sender;
+        const reciever=data.reciever;
+        const chatRoomModel=Models.chatRoomModel();
+        let room=await chatRoomModel.find({
+            users:{$all:[reciever,sender]}
+        })
+        if(!room||room.length==0){
+            const newRoom=new chatRoomModel({
+                users:[reciever,sender]
+            })
+            const savedRoom=await newRoom.save();
+            room=[savedRoom];
+        }
+        socket.join(room[0].id);
+        socket.emit('SAVE_ROOM_ID',room[0].id);
+        
+    })
+
+    socket.on('disconnect',()=>{
+        console.log('disconnected with the socket '+socket.id);
+    })
+
     socket.on('sending_chat',(data)=>{
         console.log(data)
-        socket.broadcast.emit('chat_recieved',data)
+        const roomId=data.roomId;
+        const message=data.message;
+        socket.broadcast.in(roomId).emit('recieved_chat',message);
+        //socket.broadcast.emit('chat_recieved',data)
     })
 })
 
@@ -36,7 +69,7 @@ mongoose.connect(config.DB_URL,)
 
 
 app.use('/v1',route)
-app.use('/',(req,res)=>res.send('hello'))
+app.use('/',express.static(__dirname+'/public'));
 
 server.listen(5896,x=>console.log(`server started`))
 
