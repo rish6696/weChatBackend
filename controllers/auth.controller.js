@@ -2,12 +2,13 @@ import jwt from 'jsonwebtoken'
 import models from '../models'
 import config from '../config';
 import axios from 'axios'
-const {OAuth2Client} = require('google-auth-library');
+import logger from '../helpers/logger'
+const { OAuth2Client } = require('google-auth-library');
 
 
-   
-async function verifyGoogleToken(token){
-    return new Promise(async (resolve,reject)=>{
+
+async function verifyGoogleToken(token) {
+    return new Promise(async (resolve, reject) => {
         const client = new OAuth2Client(config.GOOGLE_CLIENT_ID);
         try {
             const ticket = await client.verifyIdToken({
@@ -15,52 +16,52 @@ async function verifyGoogleToken(token){
                 audience: config.GOOGLE_CLIENT_ID,  // Specify the CLIENT_ID of the app that accesses the backend 
             });
             const payload = ticket.getPayload();
-            resolve({name:payload.name,email:payload.email,socialToken:token,source:'google'})
-            
+            resolve({ name: payload.name, email: payload.email, socialToken: token, source: 'google' })
+
         } catch (error) {
+            logger.authLogger.error(error);
             reject(error)
         }
-       })
+    })
 }
 
 
 async function verifyFacebookToken(token) {
 
-    return new Promise((resolve,reject)=>{
-        axios.get(config.fbConfirmUrl+token)
-        .then(x=>x.data)
-        .then(payload=>resolve({name:payload.name,email:payload.email,socialToken:token,source:'facebook'}) )
-        .catch(e=>reject(e))
+    return new Promise((resolve, reject) => {
+        axios.get(config.fbConfirmUrl + token)
+            .then(x => x.data)
+            .then(payload => resolve({ name: payload.name, email: payload.email, socialToken: token, source: 'facebook' }))
+            .catch(e => reject(e))
     })
 }
 
-async function loginSocial(req,res,next){
-    console.log(req.body,"***************************");
-    const { token,source }=req.body
-    const validationPromise=source==='google'?verifyGoogleToken(token):verifyFacebookToken(token)
-    try { req.body=await validationPromise } catch (error) {
-        console.log(error);
-         return res.status(400).send({status:false,message:'Invalid token'})}
-    const UserModel= models.userModel()
-    const user=await UserModel.findOne({email:req.body.email}) 
-    let userID=null
-    let newUser=false;
-    if(!user){
-        const userInstance=new UserModel({...req.body,lastLogin:new Date()})
-        const result=await userInstance.save()  
-        userID=result.id
-        newUser=true
+async function loginSocial(req, res, next) {
+    const { token, source } = req.body
+    const validationPromise = source === 'google' ? verifyGoogleToken(token) : verifyFacebookToken(token)
+    try { req.body = await validationPromise } catch (error) {
+        return res.status(400).send({ status: false, message: 'Invalid token' })
     }
-    if(!newUser){       //checks if newuser is not created then get id from fetched user
-        userID=user.id
+    const UserModel = models.userModel()
+    const user = await UserModel.findOne({ email: req.body.email })
+    let userID = null
+    let newUser = false;
+    if (!user) {
+        const userInstance = new UserModel({ ...req.body, lastLogin: new Date() })
+        const result = await userInstance.save()
+        userID = result.id
+        newUser = true
     }
-   
-    const jwtToken=jwt.sign({userID},config.JWT_SECRET)
+    if (!newUser) {       //checks if newuser is not created then get id from fetched user
+        userID = user.id
+    }
+
+    const jwtToken = jwt.sign({ userID }, config.JWT_SECRET)
     console.log(jwtToken)
-    newUser ? res.send({status:true,jwtToken}):
-    UserModel.updateOne({_id:userID},{$set:{lastLogin:new Date()}}).
-    then(x=>res.send({ status:true, jwtToken,userID }) ).
-    catch(e=>res.send({status:false,error:e}))  
+    newUser ? res.send({ status: true, jwtToken }) :
+        UserModel.updateOne({ _id: userID }, { $set: { lastLogin: new Date() } }).
+            then(x => res.send({ status: true, jwtToken, userID })).
+            catch(e => res.send({ status: false, error: e }))
 }
 
 export default {

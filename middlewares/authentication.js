@@ -1,5 +1,6 @@
 import jwt from 'jsonwebtoken';
-import config from '../config'
+import config from '../config';
+
 function jwtMiddleWare(req,res,next){
     
     const { JWT_TOKEN } =req.body;
