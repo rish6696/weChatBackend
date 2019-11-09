@@ -58,7 +58,7 @@ async function loginSocial(req, res, next) {
 
     const jwtToken = jwt.sign({ userID }, config.JWT_SECRET)
     console.log(jwtToken)
-    newUser ? res.send({ status: true, jwtToken }) :
+    newUser ? res.send({ status: true, jwtToken,userID }) :
         UserModel.updateOne({ _id: userID }, { $set: { lastLogin: new Date() } }).
             then(x => res.send({ status: true, jwtToken, userID })).
             catch(e => res.send({ status: false, error: e }))

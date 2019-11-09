@@ -18,7 +18,19 @@ function getAllUsers(req,res,next){
 
 }
 
+async function getMessages(req,res,next){
+    console.log('fetch messages trigered')
+    const { roomId }=req.body;
+    const chatRoomModel=Models.chatRoomModel();
+    try {
+        const doc=await chatRoomModel.findById(roomId);
+        res.send({status:true,data:doc.messages});
+    } catch (error) {
+        res.send({status:false})
+    }
+}
+
 
 export default {
-    getAllUsers
+    getAllUsers,getMessages
 }

@@ -6,7 +6,7 @@ log4js.configure({
 });
 
 const authLogger=log4js.getLogger('authInfo');
-console.log('iam auth logger',authLogger)
+
 
 export default {
     authLogger

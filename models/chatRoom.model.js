@@ -1,6 +1,6 @@
 import mongoose from 'mongoose'
 const chatRoomSchema = new mongoose.Schema({
-   users:[]
+   users:[],messages:[]
 })
 
 export default chatRoomSchema;
